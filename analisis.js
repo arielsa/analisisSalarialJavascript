@@ -5,18 +5,23 @@ const nombreIngresado = document.querySelector('#nombre');
 const btnCalcularMediana = document.querySelector('#btnCalcularMediana');
 const resultMediana = document.querySelector('#resultMediana');
 const pantallaNombres = document.querySelector('#pantallaTodasPersonas');
+
 const btnCalcularProyeccion = document.querySelector('#btnCalcularProyeccion');
+
 const resultProyeccion = document.querySelector('#resultProyeccion');
 const btnMedianaEmpresa = document.querySelector('#btnMedianaEmpresa');
 const inputNombreEmpresa = document.querySelector('#nombreEmpresa');
 const inputYearEmpresa = document.querySelector('#yearEmpresa');
 const resultMedianaEmpresa = document.querySelector('#resultMedianaEmpresa')
 const pantallaTodasEmpresas = document.querySelector('#pantallaTodasEmpresas');
+const resultProyeccionEmpresa=document.querySelector('#resultProyeccionEmpresa');
+const btnCalcularProyeccionEmpresa = document.querySelector('#btnProyeccionEmpresa');
 
 
 btnCalcularMediana.addEventListener('click',medianaDePersona);
 btnCalcularProyeccion.addEventListener('click',proyeccionSalarial);
 btnMedianaEmpresa.addEventListener('click',MedianaDeSalariosEmpresarial);
+btnCalcularProyeccionEmpresa.addEventListener('click',proyeccionEmpresarial);
 
 imprimirNombres();
 const empresas = {};
@@ -171,3 +176,53 @@ function imprimirNombresEmpresas(){
     pantallaTodasEmpresas.value=charAux;
 }
 
+function proyeccionEmpresarial (nombreEmpresa){
+     nombreEmpresa =inputNombreEmpresa.value;
+
+    if (!empresas[nombreEmpresa]){
+        resultProyeccionEmpresa.innerText='no se encontro la empresa';
+    }else{
+        const empresaYearsArray = Object.keys(empresas[nombreEmpresa]); // creo un arreglo que guarde las keys que son los años
+        
+        let listaMedianaYearAUX = empresaYearsArray.map((year)=>{           
+            return MedianaDeSalariosAUX (year,nombreEmpresa);
+        })
+       
+        //console.log( listaMedianaYearAUX);
+
+        function MedianaDeSalariosAUX (empresaYear,empresaName){
+            if(!empresas[empresaName]){
+                console.log("no se encontro empresa");
+                resultProyeccionEmpresa.innerText = 'nombre incorrecto ';
+            } else if(!empresas[empresaName][empresaYear]){
+                console.log('año incorrecto');
+                resultProyeccionEmpresa.innerText = 'año incorrecto ';
+            }
+            else {
+                let medianaEmpresa=PlatziMath.calcularMediana(empresas[empresaName][empresaYear]);                      
+                return medianaEmpresa;
+            }
+        }
+      
+      let acumuladorDeDiferencias = [];
+
+      for(let i=1; i<listaMedianaYearAUX.length; i++ ){
+          let salariooPasado=listaMedianaYearAUX[i-1];
+          let salarioActual = listaMedianaYearAUX [i];
+          let diferenciaSalarial = salarioActual-salariooPasado;
+          let coeficienteDiferencial = diferenciaSalarial/salariooPasado;
+          
+          acumuladorDeDiferencias.push(coeficienteDiferencial);
+        }
+      
+  
+      let medianaDeCoeficientes = PlatziMath.calcularMediana(acumuladorDeDiferencias);
+         
+      let proximoSalario = (listaMedianaYearAUX[listaMedianaYearAUX.length-1]*medianaDeCoeficientes) + listaMedianaYearAUX[listaMedianaYearAUX.length-1];
+      proximoSalario=Math.round(proximoSalario);
+  
+      resultProyeccionEmpresa.innerText = 'proyeccion estimada:'+proximoSalario;
+
+    }
+
+}
